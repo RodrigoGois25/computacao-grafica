@@ -48,17 +48,16 @@ Este projeto não requer instalação de dependências, apenas um navegador web 
 
 O código está organizado da seguinte forma:
 
-computacao-grafica/
-|-- index.html
-|-- README.md
-|
-└── js/
-|-- main.js
-|-- bresenham.js
-|-- circulo.js
-|-- curva.js
-|-- preenchimento.js
-|-- scanline.js
-|-- recorte.js
-|-- transformacoes.js
-`-- projecoes.js
+-   `computacao-grafica/` (Pasta Raiz)
+    -   `index.html`
+    -   `README.md`
+    -   `js/` (Pasta de Scripts)
+        -   `main.js`
+        -   `bresenham.js`
+        -   `circulo.js`
+        -   `curva.js`
+        -   `preenchimento.js`
+        -   `scanline.js`
+        -   `recorte.js`
+        -   `transformacoes.js`
+        -   `projecoes.js`
