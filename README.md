@@ -48,17 +48,17 @@ Este projeto não requer instalação de dependências, apenas um navegador web 
 
 O código está organizado da seguinte forma:
 
-/
-|-- index.html              # A interface principal da aplicação
-|-- README.md               # Este arquivo de documentação
+computacao-grafica/
+|-- index.html
+|-- README.md
 |
 └── js/
-|-- main.js             # Lógica principal, controle do canvas e eventos
-|-- bresenham.js        # Algoritmo de rasterização de retas
-|-- circulo.js          # Algoritmo de rasterização de círculos
-|-- curva.js            # Algoritmo para curvas de Bézier
-|-- preenchimento.js    # Algoritmo Flood Fill
-|-- scanline.js         # Algoritmo de preenchimento Scanline
-|-- recorte.js          # Algoritmo de recorte de linha Cohen-Sutherland
-|-- transformacoes.js   # Funções para transformações 2D e 3D com matrizes
-`-- projecoes.js        # Lógica da projeção ortográfica do cubo
+|-- main.js
+|-- bresenham.js
+|-- circulo.js
+|-- curva.js
+|-- preenchimento.js
+|-- scanline.js
+|-- recorte.js
+|-- transformacoes.js
+`-- projecoes.js
