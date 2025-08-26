@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Paint - Computação Gráfica</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cor-fundo: #f4f7f6;
+            --cor-painel: #ffffff;
+            --cor-borda: #d1d9e6;
+            --cor-texto: #333;
+            --cor-primaria: #007bff;
+            --cor-primaria-hover: #0056b3;
+            --sombra: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: var(--cor-primaria);
+        }
+
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        canvas {
+            border: 1px solid var(--cor-borda);
+            background-color: white;
+            cursor: crosshair;
+            box-shadow: var(--sombra);
+            border-radius: 8px;
+        }
+
+        .controls-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        fieldset {
+            background-color: var(--cor-painel);
+            border: 1px solid var(--cor-borda);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: left;
+            box-shadow: var(--sombra);
+        }
+
+        legend {
+            font-weight: 500;
+            color: var(--cor-primaria);
+            padding: 0 10px;
+        }
+
+        .controls-container label {
+            display: block;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        
+        button {
+            background-color: var(--cor-primaria);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--cor-primaria-hover);
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid var(--cor-borda);
+            border-radius: 4px;
+        }
+
+        #transform-controls table {
+            width: 100%;
+        }
+
+        #transform-controls td {
+            padding: 4px 0;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Mini Paint - CG</h1>
+
+    <div class="main-container">
+        
+        <div class="controls-container">
+            <fieldset>
+                <legend>Ferramentas de Desenho</legend>
+                <label><input type="radio" name="tool" value="bresenham"> Reta</label>
+                <label><input type="radio" name="tool" value="circulo"> Círculo</label>
+                <label><input type="radio" name="tool" value="curva"> Curva de Bézier</label>
+                <label><input type="radio" name="tool" value="poligono" checked> Polígono</label> 
+                <label><input type="radio" name="tool" value="recorte"> Recorte de Linha</label> 
+            </fieldset>
+
+            <fieldset>
+                <legend>Ferramentas de Preenchimento</legend>
+                <label><input type="radio" name="tool" value="preenchimento"> Preenchimento (Flood Fill)</label>
+                <label><input type="radio" name="tool" value="scanline"> Preenchimento (Scanline)</label> 
+            </fieldset>
+
+            <fieldset id="transform-controls">
+                <legend>Transformações 3D/2D</legend>
+                <table>
+                    <tr>
+                        <td>Translação</td>
+                        <td>TX: <input type="number" id="tx" value="0"></td>
+                        <td>TY: <input type="number" id="ty" value="0"></td>
+                        <td><button id="translateBtn">Aplicar 2D</button></td>
+                    </tr>
+                    <tr>
+                        <td>Escala</td>
+                        <td>SX: <input type="number" id="sx" value="1" step="0.1"></td>
+                        <td>SY: <input type="number" id="sy" value="1" step="0.1"></td>
+                        <td><button id="scaleBtn">Aplicar 2D</button></td>
+                    </tr>
+                    <tr>
+                        <td>Rotação</td>
+                        <td colspan="2">Ângulo: <input type="number" id="angle" value="45"></td>
+                        <td><button id="rotateBtn">Aplicar 2D</button></td>
+                    </tr>
+                </table>
+            </fieldset>
+             <fieldset>
+                <legend>Ações</legend>
+                 <button id="drawCubeBtn">Desenhar Cubo 3D</button>
+                 <button id="clearButton">Limpar Tela</button>
+            </fieldset>
+        </div>
+
+        <canvas id="mainCanvas" width="500" height="500"></canvas>
+
+    </div>
+
+    <script src="js/bresenham.js"></script>
+    <script src="js/circulo.js"></script>
+    <script src="js/curva.js"></script>
+    <script src="js/preenchimento.js"></script>
+    <script src="js/scanline.js"></script>
+    <script src="js/recorte.js"></script>
+    <script src="js/transformacoes.js"></script>
+    <script src="js/projecoes.js"></script> <script src="js/main.js"></script>
+</body>
+</html>
