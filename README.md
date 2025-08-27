@@ -27,14 +27,16 @@ O projeto inclui a implementação dos seguintes algoritmos:
 
 Aqui estão alguns exemplos de cada funcionalidade em ação.
 
-![Demonstração Scanline](images/Scanline.png)
 **Figura 1:** Polígono complexo preenchido com o algoritmo Scanline.
+![Demonstração Scanline](images/Scanline.png)
 
-![Demonstração Recorte de Linha](images/Recorte_Linha.png)
+
 **Figura 2:** Reta sendo recortada por uma janela de recorte retangular.
+![Demonstração Recorte de Linha](images/Recorte_Linha.png)
 
-![Demonstração do Cubo 3D Interativo](images/Cubo3D.png)
 **Figura 3:** Projeção ortográfica de um cubo 3D após ser rotacionado.
+![Demonstração do Cubo 3D Interativo](images/Cubo3D.png)
+
 
 ## Como Executar
 
