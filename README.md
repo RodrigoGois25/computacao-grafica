@@ -27,13 +27,13 @@ O projeto inclui a implementação dos seguintes algoritmos:
 
 Aqui estão alguns exemplos de cada funcionalidade em ação.
 
-*(coloque seu print do polígono preenchido com Scanline aqui)*
+![Demonstração Scanline](images/Scanline.png)
 **Figura 1:** Polígono complexo preenchido com o algoritmo Scanline.
 
-*(coloque seu print do recorte de linha aqui)*
+![Demonstração Recorte de Linha](images/Recorte_Linha.png)
 **Figura 2:** Reta sendo recortada por uma janela de recorte retangular.
 
-*(coloque seu print do cubo 3D girado aqui)*
+![Demonstração do Cubo 3D Interativo](images/Cubo3D.png)
 **Figura 3:** Projeção ortográfica de um cubo 3D após ser rotacionado.
 
 ## Como Executar
@@ -51,6 +51,10 @@ O código está organizado da seguinte forma:
 -   `computacao-grafica/` (Pasta Raiz)
     -   `index.html`
     -   `README.md`
+    -   `images/`
+        -   `Cubo3D`
+        -   `Recorte_Linha`
+        -   `Scanline`
     -   `js/` (Pasta de Scripts)
         -   `main.js`
         -   `bresenham.js`
