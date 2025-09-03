@@ -1,13 +1,23 @@
-function bresenham(x0, y0, x1, y1) {
-    let points = [];
+// Arquivo: js/bresenham.js (VERSÃO ANIMADA)
+
+async function bresenham(x0, y0, x1, y1) {
     let dx = Math.abs(x1 - x0);
     let dy = Math.abs(y1 - y0);
     let sx = (x0 < x1) ? 1 : -1;
     let sy = (y0 < y1) ? 1 : -1;
     let err = dx - dy;
+
     while (true) {
-        points.push({x: x0, y: y0});
-        if (x0 === x1 && y0 === y1) break;
+        drawToGrid({x: x0, y: y0}, corDesenho); // Desenha o pixel diretamente na grade
+
+        // Pausa para a animação ser visível
+        renderGrid();
+        await sleep(5); // Pausa de 5 milissegundos
+
+        if (x0 === x1 && y0 === y1) {
+            break;
+        }
+
         let e2 = 2 * err;
         if (e2 > -dy) {
             err -= dy;
@@ -18,5 +28,4 @@ function bresenham(x0, y0, x1, y1) {
             y0 += sy;
         }
     }
-    return points;
 }
