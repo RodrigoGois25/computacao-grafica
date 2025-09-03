@@ -1,4 +1,4 @@
-// Arquivo: js/app.js (VERSÃO FINAL COM TODAS AS ANIMAÇÕES)
+// Arquivo: js/main.js (VERSÃO CORRIGIDA)
 
 const canvas = document.getElementById('mainCanvas');
 const ctx = canvas.getContext('2d');
@@ -23,6 +23,24 @@ let historyStack = [];
 let isCubeActive = false;
 
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+// NOVO: Versão RÁPIDA (Síncrona) do Bresenham para feedback visual instantâneo
+const bresenhamSync = (x0, y0, x1, y1) => {
+    let points = [];
+    let dx = Math.abs(x1 - x0);
+    let dy = Math.abs(y1 - y0);
+    let sx = (x0 < x1) ? 1 : -1;
+    let sy = (y0 < y1) ? 1 : -1;
+    let err = dx - dy;
+    while (true) {
+        points.push({x: x0, y: y0});
+        if (x0 === x1 && y0 === y1) break;
+        let e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x0 += sx; }
+        if (e2 < dx) { err += dx; y0 += sy; }
+    }
+    return points;
+};
 
 function saveState() {
     const state = { grid: JSON.parse(JSON.stringify(grid)), polygons: JSON.parse(JSON.stringify(polygons)), };
@@ -78,7 +96,7 @@ async function handleCanvasClick(event) {
     switch (drawingMode) {
         case 'bresenham': case 'circulo': case 'curva':
             tempPoints.push({ x, y });
-            await processShapeDrawing(x, y); // Agora espera a animação
+            await processShapeDrawing(x, y);
             break;
         case 'poligono':
             if (event.detail === 2) { if (tempPoints.length > 2) { saveState(); await finalizePolygon(); } } else { tempPoints.push({ x, y }); drawTempPolygon(); } break;
@@ -141,9 +159,6 @@ function drawTempPolygon() {
     }
 }
 
-// Para desenhar a janela e as linhas de recorte sem animação, precisamos de uma versão síncrona do Bresenham
-const bresenhamSync = (x0, y0, x1, y1) => { let points = []; let dx = Math.abs(x1 - x0); let dy = Math.abs(y1 - y0); let sx = (x0 < x1) ? 1 : -1; let sy = (y0 < y1) ? 1 : -1; let err = dx - dy; while (true) { points.push({x: x0, y: y0}); if (x0 === x1 && y0 === y1) break; let e2 = 2 * err; if (e2 > -dy) { err -= dy; x0 += sx; } if (e2 < dx) { err += dx; y0 += sy; } } return points; };
-
 async function handleClippingClick(x, y) {
     if (clippingState === 'defining_window') {
         tempPoints.push({ x, y });
@@ -174,10 +189,11 @@ async function handleClippingClick(x, y) {
     }
 }
 
-// ... Listeners de eventos e lógica do Cubo 3D e Transformações 2D (sem alterações)...
+function drawClipWindow() { if (clipWindow.xmin !== undefined) { ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]); ctx.strokeRect(clipWindow.xmin * PIXEL_SIZE, clipWindow.ymin * PIXEL_SIZE, (clipWindow.xmax - clipWindow.xmin) * PIXEL_SIZE, (clipWindow.ymax - clipWindow.ymin) * PIXEL_SIZE); ctx.setLineDash([]); } }
 document.querySelectorAll('input[name="tool"]').forEach(radio=>{radio.addEventListener('change',e=>{drawingMode=e.target.value;isCubeActive=false;tempPoints=[];if(drawingMode==='recorte'){clippingState='defining_window';clipWindow={}}renderGrid();if(drawingMode==='recorte')drawClipWindow()})});canvas.addEventListener('click',handleCanvasClick);clearButton.addEventListener('click',init);const undoButton=document.getElementById('undoButton');undoButton.addEventListener('click',undo);
 function getPolygonCenter(polygon){if(!polygon||polygon.length===0)return{x:0,y:0};let sumX=0,sumY=0;for(const p of polygon){sumX+=p.x;sumY+=p.y}return{x:sumX/polygon.length,y:sumY/polygon.length}}
-document.getElementById('translateBtn').addEventListener('click',()=>{if(polygons.length===0)return;saveState();const tx=parseFloat(document.getElementById('tx').value)||0;const ty=parseFloat(document.getElementById('ty').value)||0;const tM=createTranslationMatrix(tx,ty);const lP=polygons.pop();const nP=transformPolygon(lP,tM);polygons.push(nP);redrawAllPolygons()});document.getElementById('scaleBtn').addEventListener('click',()=>{if(polygons.length===0)return;saveState();const sx=parseFloat(document.getElementById('sx').value)||1;const sy=parseFloat(document.getElementById('sy').value)||1;const lP=polygons.pop();const c=getPolygonCenter(lP);const T1=createTranslationMatrix(-c.x,-c.y);const S=createScalingMatrix(sx,sy);const T2=createTranslationMatrix(c.x,c.y);let fM=multiplyMatrices(T2,S);fM=multiplyMatrices(fM,T1);const nP=transformPolygon(lP,fM);polygons.push(nP);redrawAllPolygons()});document.getElementById('rotateBtn').addEventListener('click',()=>{if(polygons.length===0)return;saveState();const angle=parseFloat(document.getElementById('angle').value)||0;const lP=polygons.pop();const c=getPolygonCenter(lP);const T1=createTranslationMatrix(-c.x,-c.y);const R=createRotationMatrix(angle);const T2=createTranslationMatrix(c.x,c.y);let fM=multiplyMatrices(T2,R);fM=multiplyMatrices(fM,T1);const nP=transformPolygon(lP,fM);polygons.push(nP);redrawAllPolygons()});function redrawAllPolygons(){grid=Array(GRID_HEIGHT).fill(null).map(()=>Array(GRID_WIDTH).fill(corFundo));polygons.forEach(poly=>{for(let i=0;i<poly.length;i++){const p1=poly[i];const p2=poly[(i+1)%poly.length];const lineSegment=bresenhamSync(p1.x,p1.y,p2.x,p2.y);lineSegment.forEach(p=>drawToGrid(p,corDesenho))}});renderGrid()}
+document.getElementById('translateBtn').addEventListener('click',()=>{if(polygons.length===0)return;saveState();const tx=parseFloat(document.getElementById('tx').value)||0;const ty=parseFloat(document.getElementById('ty').value)||0;const tM=createTranslationMatrix(tx,ty);const lP=polygons.pop();const nP=transformPolygon(lP,tM);polygons.push(nP);redrawAllPolygons()});document.getElementById('scaleBtn').addEventListener('click',()=>{if(polygons.length===0)return;saveState();const sx=parseFloat(document.getElementById('sx').value)||1;const sy=parseFloat(document.getElementById('sy').value)||1;const lP=polygons.pop();const c=getPolygonCenter(lP);const T1=createTranslationMatrix(-c.x,-c.y);const S=createScalingMatrix(sx,sy);const T2=createTranslationMatrix(c.x,c.y);let fM=multiplyMatrices(T2,S);fM=multiplyMatrices(fM,T1);const nP=transformPolygon(lP,fM);polygons.push(nP);redrawAllPolygons()});document.getElementById('rotateBtn').addEventListener('click',()=>{if(polygons.length===0)return;saveState();const angle=parseFloat(document.getElementById('angle').value)||0;const lP=polygons.pop();const c=getPolygonCenter(lP);const T1=createTranslationMatrix(-c.x,-c.y);const R=createRotationMatrix(angle);const T2=createTranslationMatrix(c.x,c.y);let fM=multiplyMatrices(T2,R);fM=multiplyMatrices(fM,T1);const nP=transformPolygon(lP,fM);polygons.push(nP);redrawAllPolygons()});
+function redrawAllPolygons(){grid=Array(GRID_HEIGHT).fill(null).map(()=>Array(GRID_WIDTH).fill(corFundo));polygons.forEach(poly=>{for(let i=0;i<poly.length;i++){const p1=poly[i];const p2=poly[(i+1)%poly.length];const lineSegment=bresenhamSync(p1.x,p1.y,p2.x,p2.y);lineSegment.forEach(p=>drawToGrid(p,corDesenho))}});renderGrid()}
 const drawCubeBtn=document.getElementById('drawCubeBtn');const txInput=document.getElementById('tx');const tyInput=document.getElementById('ty');const sxInput=document.getElementById('sx');const syInput=document.getElementById('sy');const angleInput=document.getElementById('angle');
 function draw3DCube(){isCubeActive=true;grid=Array(GRID_HEIGHT).fill(null).map(()=>Array(GRID_WIDTH).fill(corFundo));polygons=[];const escala=(parseFloat(sxInput.value)||1)*20;const offsetX=GRID_WIDTH/2+(parseFloat(txInput.value)||0);const offsetY=GRID_HEIGHT/2+(parseFloat(tyInput.value)||0);const angle=parseFloat(angleInput.value)||0;const arestasDoCubo=projetarCubo(escala,offsetX,offsetY,angle,angle,angle);arestasDoCubo.forEach(aresta=>{const linha=bresenhamSync(aresta.p1.x,aresta.p1.y,aresta.p2.x,aresta.p2.y);linha.forEach(ponto=>drawToGrid(ponto,corDesenho))});renderGrid()}
 drawCubeBtn.addEventListener('click',()=>{saveState();draw3DCube()});txInput.addEventListener('input',()=>{if(isCubeActive)draw3DCube()});tyInput.addEventListener('input',()=>{if(isCubeActive)draw3DCube()});sxInput.addEventListener('input',()=>{if(isCubeActive)draw3DCube()});syInput.addEventListener('input',()=>{if(isCubeActive)draw3DCube()});angleInput.addEventListener('input',()=>{if(isCubeActive)draw3DCube()});
