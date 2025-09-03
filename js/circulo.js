@@ -1,5 +1,3 @@
-// Arquivo: js/circulo.js (VERSÃO ANIMADA)
-
 async function midpointCircle(xc, yc, radius) {
     let x = radius;
     let y = 0;

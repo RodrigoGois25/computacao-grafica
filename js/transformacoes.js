@@ -1,6 +1,3 @@
-// Arquivo: js/transformacoes.js
-
-// --- FUNÇÕES 2D (JÁ EXISTENTES) ---
 function multiplyMatrixVector(matrix, vector) {
     const result = [0, 0, 0];
     for (let i = 0; i < 3; i++) {

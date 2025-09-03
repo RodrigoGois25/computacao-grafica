@@ -1,5 +1,3 @@
-// Arquivo: js/main.js (VERSÃO CORRIGIDA)
-
 const canvas = document.getElementById('mainCanvas');
 const ctx = canvas.getContext('2d');
 const clearButton = document.getElementById('clearButton');
@@ -24,7 +22,6 @@ let isCubeActive = false;
 
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 
-// NOVO: Versão RÁPIDA (Síncrona) do Bresenham para feedback visual instantâneo
 const bresenhamSync = (x0, y0, x1, y1) => {
     let points = [];
     let dx = Math.abs(x1 - x0);

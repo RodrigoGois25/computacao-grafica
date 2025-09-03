@@ -1,5 +1,3 @@
-// Arquivo: js/scanline.js (VERSÃO ANIMADA)
-
 async function scanlineFill(polygon, fillColor, grid) {
     if (!polygon || polygon.length < 3) return;
 

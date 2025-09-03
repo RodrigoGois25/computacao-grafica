@@ -1,5 +1,3 @@
-// Arquivo: js/preenchimento.js (VERSÃO ANIMADA)
-
 async function floodFill(x, y, fillColor, grid) {
     const gridWidth = grid[0].length;
     const gridHeight = grid.length;

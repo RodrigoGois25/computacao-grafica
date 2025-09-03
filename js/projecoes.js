@@ -1,5 +1,3 @@
-// Arquivo: js/projecoes.js
-
 const verticesCubo = [
     { x: -1, y: -1, z: -1 }, { x:  1, y: -1, z: -1 }, { x:  1, y:  1, z: -1 }, { x: -1, y:  1, z: -1 },
     { x: -1, y: -1, z:  1 }, { x:  1, y: -1, z:  1 }, { x:  1, y:  1, z:  1 }, { x: -1, y:  1, z:  1 }
