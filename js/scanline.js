@@ -1,11 +1,15 @@
-function scanlineFill(polygon, fillColor, grid) {
+// Arquivo: js/scanline.js (VERSÃO ANIMADA)
+
+async function scanlineFill(polygon, fillColor, grid) {
     if (!polygon || polygon.length < 3) return;
+
     let minY = Infinity;
     let maxY = -Infinity;
     for (const p of polygon) {
         minY = Math.min(minY, p.y);
         maxY = Math.max(maxY, p.y);
     }
+
     for (let y = minY; y < maxY; y++) {
         let intersections = [];
         for (let i = 0; i < polygon.length; i++) {
@@ -17,15 +21,19 @@ function scanlineFill(polygon, fillColor, grid) {
                 intersections.push(x);
             }
         }
+
         intersections.sort((a, b) => a - b);
+
         for (let i = 0; i < intersections.length; i += 2) {
             const x_start = Math.ceil(intersections[i]);
             const x_end = Math.floor(intersections[i + 1]);
             for (let x = x_start; x < x_end; x++) {
-                 if (y >= 0 && y < grid.length && x >= 0 && x < grid[0].length) {
-                    grid[y][x] = fillColor;
-                }
+                drawToGrid({x, y}, fillColor);
             }
         }
+        
+        // Pausa e redesenha a cada linha para criar o efeito scanline
+        renderGrid();
+        await sleep(20);
     }
 }

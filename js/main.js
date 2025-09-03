@@ -1,4 +1,4 @@
-// Arquivo: js/main.js (VERSÃO FINAL COM UNDO)
+// Arquivo: js/main.js (VERSÃO FINAL CORRIGIDA)
 
 const canvas = document.getElementById('mainCanvas');
 const ctx = canvas.getContext('2d');
@@ -19,21 +19,21 @@ let tempPoints = [];
 let polygons = [];
 let clippingState = 'defining_window';
 let clipWindow = {};
-
-// --- NOVO: LÓGICA DE HISTÓRICO ---
 let historyStack = [];
 
+// Variável de estado para controlar a atualização do cubo
+let isCubeActive = false;
+const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+
 function saveState() {
-    // Usamos JSON para criar uma cópia profunda (deep copy) do estado atual
     const state = {
         grid: JSON.parse(JSON.stringify(grid)),
         polygons: JSON.parse(JSON.stringify(polygons)),
     };
     historyStack.push(state);
-
-    // Limita o histórico para não usar muita memória
     if (historyStack.length > 20) {
-        historyStack.shift(); // Remove o estado mais antigo
+        historyStack.shift();
     }
 }
 
@@ -42,8 +42,8 @@ function undo() {
         const lastState = historyStack.pop();
         grid = lastState.grid;
         polygons = lastState.polygons;
+        isCubeActive = false; // Desativa o modo cubo ao desfazer
         renderGrid();
-        // Redesenha a janela de recorte se ela existir
         if (drawingMode === 'recorte') {
             drawClipWindow();
         }
@@ -51,14 +51,13 @@ function undo() {
         console.log("Não há mais ações para desfazer.");
     }
 }
-// --- FIM DA LÓGICA DE HISTÓRICO ---
-
 
 function init() {
     grid = Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(corFundo));
     tempPoints = [];
     polygons = [];
-    historyStack = []; // Limpa o histórico também
+    historyStack = [];
+    isCubeActive = false;
     clippingState = 'defining_window';
     clipWindow = {};
     document.querySelector('input[name="tool"][value="poligono"]').checked = true;
@@ -78,12 +77,13 @@ function renderGrid() {
     }
 }
 
-function handleCanvasClick(event) {
+async function handleCanvasClick(event) {
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor((event.clientX - rect.left) / PIXEL_SIZE);
     const y = Math.floor((event.clientY - rect.top) / PIXEL_SIZE);
+    
+    isCubeActive = false; // Qualquer clique no canvas desativa o modo de atualização do cubo
 
-    // Salva o estado ANTES de qualquer modificação
     if (drawingMode !== 'recorte' && drawingMode !== 'poligono' && tempPoints.length === 1) saveState();
     if (drawingMode === 'preenchimento' || drawingMode === 'scanline') saveState();
 
@@ -93,9 +93,15 @@ function handleCanvasClick(event) {
         case 'poligono':
             if (event.detail === 2) { if (tempPoints.length > 2) { saveState(); finalizePolygon(); } } else { tempPoints.push({ x, y }); drawTempPolygon(); } break;
         case 'preenchimento':
-            floodFill(x, y, corPreenchimento, grid); renderGrid(); break;
+            await floodFill(x, y, corPreenchimento, grid); 
+            renderGrid(); 
+            break;
         case 'scanline':
-            if (polygons.length > 0) { scanlineFill(polygons[polygons.length - 1], corPreenchimento, grid); renderGrid(); } break;
+            if (polygons.length > 0) { 
+                await scanlineFill(polygons[polygons.length - 1], corPreenchimento, grid);
+                renderGrid();
+            } 
+            break;
         case 'recorte':
             handleClippingClick(x, y); break;
     }
@@ -116,7 +122,7 @@ function handleClippingClick(x, y) {
         if (tempPoints.length === 1) {
             ctx.fillStyle = corControle; ctx.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
         } else if (tempPoints.length === 2) {
-            saveState(); // Salva antes de desenhar a linha recortada
+            saveState();
             const p1 = tempPoints[0]; const p2 = tempPoints[1];
             renderGrid(); drawClipWindow();
             const originalLine = bresenham(p1.x, p1.y, p2.x, p2.y);
@@ -124,7 +130,6 @@ function handleClippingClick(x, y) {
             const clippedLine = cohenSutherland(p1.x, p1.y, p2.x, p2.y, clipWindow.xmin, clipWindow.ymin, clipWindow.xmax, clipWindow.ymax);
             if (clippedLine) {
                 const lineSegment = bresenham(clippedLine.x0, clippedLine.y0, clippedLine.x1, clippedLine.y1);
-                // ATENÇÃO: Linhas recortadas não são salvas na grade para não interferir no undo
                 lineSegment.forEach(p => { ctx.fillStyle = corDesenho; ctx.fillRect(p.x * PIXEL_SIZE, p.y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE); });
             }
             tempPoints = [];
@@ -132,7 +137,6 @@ function handleClippingClick(x, y) {
     }
 }
 
-// ... (O resto das funções como processShapeDrawing, finalizePolygon, etc., continuam iguais)
 function processShapeDrawing(x, y) { if (drawingMode === 'bresenham' && tempPoints.length === 2) { const points = bresenham(tempPoints[0].x, tempPoints[0].y, x, y); points.forEach(p => drawToGrid(p, corDesenho)); tempPoints = []; } else if (drawingMode === 'circulo' && tempPoints.length === 2) { const dx = x - tempPoints[0].x; const dy = y - tempPoints[0].y; const radius = Math.round(Math.sqrt(dx * dx + dy * dy)); const points = midpointCircle(tempPoints[0].x, tempPoints[0].y, radius); points.forEach(p => drawToGrid(p, corDesenho)); tempPoints = []; } else if (drawingMode === 'curva' && tempPoints.length === 4) { const bezierPoints = cubicBezier(tempPoints[0], tempPoints[1], tempPoints[2], tempPoints[3]); for (let i = 0; i < bezierPoints.length - 1; i++) { const lineSegment = bresenham(bezierPoints[i].x, bezierPoints[i].y, bezierPoints[i + 1].x, bezierPoints[i + 1].y); lineSegment.forEach(p => drawToGrid(p, corDesenho)); } tempPoints = []; } renderGrid(); tempPoints.forEach(p => { ctx.fillStyle = corControle; ctx.fillRect(p.x * PIXEL_SIZE, p.y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE); }); }
 function finalizePolygon() { polygons.push([...tempPoints]); for (let i = 0; i < tempPoints.length; i++) { const p1 = tempPoints[i]; const p2 = tempPoints[(i + 1) % tempPoints.length]; const lineSegment = bresenham(p1.x, p1.y, p2.x, p2.y); lineSegment.forEach(p => drawToGrid(p, corDesenho)); } tempPoints = []; renderGrid(); }
 function drawTempPolygon() { renderGrid(); tempPoints.forEach(p => { ctx.fillStyle = corControle; ctx.fillRect(p.x * PIXEL_SIZE, p.y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE); }); for (let i = 0; i < tempPoints.length - 1; i++) { const linePoints = bresenham(tempPoints[i].x, tempPoints[i].y, tempPoints[i + 1].x, tempPoints[i + 1].y); linePoints.forEach(p => { ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(p.x * PIXEL_SIZE, p.y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE); }); } }
@@ -141,11 +145,10 @@ function drawToGrid(point, color) { if (point.y >= 0 && point.y < GRID_HEIGHT &&
 function getPolygonCenter(polygon) { if (!polygon || polygon.length === 0) return { x: 0, y: 0 }; let sumX = 0, sumY = 0; for (const p of polygon) { sumX += p.x; sumY += p.y; } return { x: sumX / polygon.length, y: sumY / polygon.length }; }
 function redrawAllPolygons() { grid = Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(corFundo)); polygons.forEach(poly => { for (let i = 0; i < poly.length; i++) { const p1 = poly[i]; const p2 = poly[(i + 1) % poly.length]; const lineSegment = bresenham(p1.x, p1.y, p2.x, p2.y); lineSegment.forEach(p => drawToGrid(p, corDesenho)); } }); renderGrid(); }
 
-
 // --- LISTENERS DE EVENTOS ---
 document.querySelectorAll('input[name="tool"]').forEach(radio => {
-    radio.addEventListener('change', (e) => {
-        drawingMode = e.target.value; tempPoints = [];
+    radio.addEventListener('change', e => {
+        drawingMode = e.target.value; isCubeActive = false; tempPoints = [];
         if (drawingMode === 'recorte') { clippingState = 'defining_window'; clipWindow = {}; }
         renderGrid();
         if (drawingMode === 'recorte') drawClipWindow();
@@ -153,8 +156,7 @@ document.querySelectorAll('input[name="tool"]').forEach(radio => {
 });
 canvas.addEventListener('click', handleCanvasClick);
 clearButton.addEventListener('click', init);
-
-const undoButton = document.getElementById('undoButton'); // Listener para o botão Undo
+const undoButton = document.getElementById('undoButton');
 undoButton.addEventListener('click', undo);
 
 // --- LÓGICA DAS TRANSFORMAÇÕES 2D ---
@@ -169,7 +171,7 @@ const sxInput = document.getElementById('sx'); const syInput = document.getEleme
 const angleInput = document.getElementById('angle');
 
 function draw3DCube() {
-    saveState();
+    isCubeActive = true;
     grid = Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(corFundo));
     polygons = [];
     const escala = (parseFloat(sxInput.value) || 1) * 20;
@@ -184,11 +186,14 @@ function draw3DCube() {
     renderGrid();
 }
 
-drawCubeBtn.addEventListener('click', draw3DCube);
-txInput.addEventListener('input', () => { if(drawingMode === 'cubo3d') draw3DCube() }); // Só atualiza se estiver no modo cubo
-tyInput.addEventListener('input', () => { if(drawingMode === 'cubo3d') draw3DCube() });
-sxInput.addEventListener('input', () => { if(drawingMode === 'cubo3d') draw3DCube() });
-syInput.addEventListener('input', () => { if(drawingMode === 'cubo3d') draw3DCube() });
-angleInput.addEventListener('input', () => { if(drawingMode === 'cubo3d') draw3DCube() });
+drawCubeBtn.addEventListener('click', () => {
+    saveState();
+    draw3DCube();
+});
+txInput.addEventListener('input', () => { if (isCubeActive) draw3DCube() });
+tyInput.addEventListener('input', () => { if (isCubeActive) draw3DCube() });
+sxInput.addEventListener('input', () => { if (isCubeActive) draw3DCube() });
+syInput.addEventListener('input', () => { if (isCubeActive) draw3DCube() });
+angleInput.addEventListener('input', () => { if (isCubeActive) draw3DCube() });
 
 init();
