@@ -8,153 +8,55 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --cor-fundo: #f4f7f6;
-            --cor-painel: #ffffff;
-            --cor-borda: #d1d9e6;
-            --cor-texto: #333;
-            --cor-primaria: #007bff;
-            --cor-primaria-hover: #0056b3;
-            --sombra: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--cor-fundo);
-            color: var(--cor-texto);
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-        }
-
-        h1 {
-            color: var(--cor-primaria);
-        }
-
-        .main-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        canvas {
-            border: 1px solid var(--cor-borda);
-            background-color: white;
-            box-shadow: var(--sombra);
-            border-radius: 8px;
-        }
-
-        .controls-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        fieldset {
-            background-color: var(--cor-painel);
-            border: 1px solid var(--cor-borda);
-            border-radius: 8px;
-            padding: 15px;
-            text-align: left;
-            box-shadow: var(--sombra);
-        }
-
-        legend {
-            font-weight: 500;
-            color: var(--cor-primaria);
-            padding: 0 10px;
-        }
-
-        .controls-container label {
-            display: block;
-            margin-bottom: 8px;
-            cursor: pointer;
-        }
-        
-        button {
-            background-color: var(--cor-primaria);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-            transition: background-color 0.2s;
-        }
-
-        button:hover {
-            background-color: var(--cor-primaria-hover);
-        }
-
-        input[type="number"] {
-            width: 60px;
-            padding: 5px;
-            border: 1px solid var(--cor-borda);
-            border-radius: 4px;
-        }
-
-        #transform-controls table {
-            width: 100%;
-        }
-
-        #transform-controls td {
-            padding: 4px 0;
-        }
-
+        :root { --cor-fundo: #f4f7f6; --cor-painel: #ffffff; --cor-borda: #d1d9e6; --cor-texto: #333; --cor-primaria: #007bff; --cor-primaria-hover: #0056b3; --sombra: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); text-align: center; margin: 0; padding: 20px; }
+        h1 { color: var(--cor-primaria); }
+        .main-container { display: flex; justify-content: center; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
+        canvas { border: 1px solid var(--cor-borda); background-color: white; box-shadow: var(--sombra); border-radius: 8px; }
+        .controls-container { display: flex; flex-direction: column; gap: 15px; width: 350px; }
+        fieldset { background-color: var(--cor-painel); border: 1px solid var(--cor-borda); border-radius: 8px; padding: 15px; text-align: left; box-shadow: var(--sombra); }
+        legend { font-weight: 500; color: var(--cor-primaria); padding: 0 10px; }
+        label { display: block; margin-bottom: 8px; cursor: pointer; }
+        button { background-color: var(--cor-primaria); color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-family: 'Poppins', sans-serif; transition: background-color 0.2s; width: 100%; margin-top: 5px;}
+        button:hover { background-color: var(--cor-primaria-hover); }
+        input[type="range"] { width: 95%; }
+        #customCursor { position: absolute; pointer-events: none; width: 5px; height: 5px; border: 1px solid black; background-color: white; mix-blend-mode: difference; display: none; z-index: 1000; }
     </style>
 </head>
 <body>
     <h1>Mini Paint - CG</h1>
-
+    <div id="customCursor"></div>
     <div class="main-container">
-        
         <div class="controls-container">
             <fieldset>
-                <legend>Ferramentas de Desenho</legend>
+                <legend>Ferramentas 2D</legend>
+                <label><input type="radio" name="tool" value="poligono" checked> Polígono</label> 
                 <label><input type="radio" name="tool" value="bresenham"> Reta</label>
                 <label><input type="radio" name="tool" value="circulo"> Círculo</label>
                 <label><input type="radio" name="tool" value="curva"> Curva de Bézier</label>
-                <label><input type="radio" name="tool" value="poligono" checked> Polígono</label> 
-                <label><input type="radio" name="tool" value="recorte"> Recorte de Linha</label> 
-            </fieldset>
-
-            <fieldset>
-                <legend>Ferramentas de Preenchimento</legend>
+                <label><input type="radio" name="tool" value="recorte"> Recorte de Polígono</label> 
                 <label><input type="radio" name="tool" value="preenchimento"> Preenchimento (Flood Fill)</label>
                 <label><input type="radio" name="tool" value="scanline"> Preenchimento (Scanline)</label> 
             </fieldset>
-
-            <fieldset id="transform-controls">
-    <legend>Transformações</legend>
-    <table>
-        <tr>
-            <td>Translação</td>
-            <td>TX: <input type="number" id="tx" value="0"></td>
-            <td>TY: <input type="number" id="ty" value="0"></td>
-        </tr>
-        <tr>
-            <td>Escala</td>
-            <td>SX: <input type="number" id="sx" value="1" step="0.1"></td>
-            <td>SY: <input type="number" id="sy" value="1" step="0.1"></td>
-        </tr>
-        <tr>
-            <td>Rotação</td>
-            <td colspan="2">Ângulo: <input type="number" id="angle" value="0"></td>
-        </tr>
-    </table>
-</fieldset>
              <fieldset>
-                <legend>Ações</legend>
-                <button id="drawCubeBtn">Desenhar Cubo 3D</button>
-                <button id="clearButton">Limpar Tela</button>
-                <button id="undoButton">Desfazer</button> 
+                <legend>Objeto 3D</legend>
+                <button id="drawCubeBtn">Desenhar / Resetar Cubo</button>
+                <label for="scale3d">Escala: <span id="scale3d_label">40</span></label>
+                <input type="range" id="scale3d" min="10" max="40" value="20">
+                <label for="angleX">Rotação X: <span id="angleX_label">20</span>°</label>
+                <input type="range" id="angleX" min="-180" max="180" value="20">
+                <label for="angleY">Rotação Y: <span id="angleY_label">-30</span>°</label>
+                <input type="range" id="angleY" min="-180" max="180" value="-30">
+                <label for="angleZ">Rotação Z: <span id="angleZ_label">0</span>°</label>
+                <input type="range" id="angleZ" min="-180" max="180" value="0">
+            </fieldset>
+            <fieldset>
+                 <legend>Ações Gerais</legend>
+                 <button id="undoButton">Desfazer</button> 
+                 <button id="clearButton">Limpar Tela</button>
             </fieldset>
         </div>
-
         <canvas id="mainCanvas" width="500" height="500"></canvas>
-
     </div>
 
     <script src="js/bresenham.js"></script>
@@ -163,7 +65,9 @@
     <script src="js/preenchimento.js"></script>
     <script src="js/scanline.js"></script>
     <script src="js/recorte.js"></script>
+    <script src="js/recortePoligono.js"></script>
     <script src="js/transformacoes.js"></script>
-    <script src="js/projecoes.js"></script> <script src="js/main.js"></script>
+    <script src="js/projecoes.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
